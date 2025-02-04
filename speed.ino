@@ -1,5 +1,8 @@
 #include <LiquidCrystal.h>
 
+// permently save a variable library
+#include <EEPROM.h>
+
 // Define the LED strip pins
 #define LED_STRIP_PIN_1 27  
 #define LED_STRIP_PIN_2 26  
@@ -26,13 +29,17 @@ const int LCD_D6 = 16; // D6 pin connected
 const int LCD_D7 = 15; // D7 pin connected 
 
 int speed = 500;
-int led = 0;
-int direction = true;
+int ledIndex = 0;
+int score = 0;
 
-int leds[] = {BUTTON_PIN_1, BUTTON_PIN_2, BUTTON_PIN_3, BUTTON_PIN_4, BUTTON_PIN_5};
+bool direction = true;
+
+int leds[] = {LED_STRIP_PIN_1, LED_STRIP_PIN_2, LED_STRIP_PIN_3, LED_STRIP_PIN_4, LED_STRIP_PIN_5};
 
 // Initialize the LiquidCrystal library
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+
+// "unsigned long currentMillis = millis()" to check delay
 
 void setup() {
 
@@ -73,6 +80,9 @@ void setup() {
     delay(1000);
   }
   lcd.clear();
+  lcd.print("     score:");
+  lcd.setCursor(7, 1);
+  lcd.print(score);
 }
 
 void loop() {
@@ -80,14 +90,18 @@ void loop() {
 }
 
 void run(int speed) {
-  digitalWrite(leds[led], HIGH);
+  digitalWrite(leds[ledIndex], HIGH);
   delay(speed);
-  digitalWrite(leds[led], LOW);
+  digitalWrite(leds[ledIndex], LOW);
+  if (ledIndex == 4) {
+    direction = false;
+  } else if (ledIndex == 0) {
+    direction = true;
+  }
 
   if (direction == true) {
-    led ++;
-  }
-  else {
-    direction --;
+    ledIndex++;
+  } else {
+    ledIndex--;
   }
 }
