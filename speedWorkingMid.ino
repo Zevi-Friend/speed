@@ -37,6 +37,7 @@ int score = 0;
 int millisDelay = 0;
 
 bool direction = true;
+bool held = false;
 
 int leds[] = {LED_STRIP_PIN_1, LED_STRIP_PIN_2, LED_STRIP_PIN_3, LED_STRIP_PIN_4, LED_STRIP_PIN_5};
 
@@ -90,35 +91,40 @@ void setup() {
   lcd.print(score);
 }
 
+unsigned long oldMillis = millis();
+
 void loop() {
-  for (int i = 0; i < 5; i++) {
-    digitalWrite(leds[ledIndex], LOW);    
-  }
   digitalWrite(leds[ledIndex], HIGH);
-  Serial.println("hi");
-  checkDelay(BUTTON_PIN_3, 500, ledIndex);
+  Serial.println(ledIndex);
+  unsigned long newMillis = millis();
+
+  while (newMillis - oldMillis < speed) {
+    newMillis = millis();
+
+    if (digitalRead(BUTTON_PIN_3) == HIGH) {
+      if (ledIndex == 3 && held == false) {
+        speed = speed * .80;
+        held = true;
+      }
+    }
+  }
+
+  digitalWrite(leds[ledIndex], LOW);
+  oldMillis = millis();
 
   if (direction == true) {
     ledIndex += 1;
   } else {
     ledIndex -= 1;
   }
-}
-
-void checkDelay(int pin, int checkTime, int ledIndex) {
-  unsigned long oldMillis = millis();
-
-  while (true) {
-    unsigned long newMillis = millis();
-    
-    if (newMillis - oldMillis >= checkTime) {
-      digitalWrite(LED_STRIP_PIN_3, HIGH);
-      break;
-    }
-
-    if (digitalRead(pin) == HIGH  && ledIndex == 3) {
-      lcd.clear();
-      lcd.print(newMillis);
-    }
+  if (ledIndex == 5) {
+    direction = false;
+    ledIndex = 3;
+  } else if (ledIndex == -1) {
+    direction = true;
+    ledIndex = 1;
+  }
+  if (digitalRead(BUTTON_PIN_3) == LOW) {
+    held = false;
   }
 }
