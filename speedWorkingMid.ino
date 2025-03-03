@@ -103,7 +103,7 @@ void loop() {
     unsigned long oldMillis = millis();
     gameOver = runSpeed(oldMillis);
   }
-  digitalWrite(leds[ledIndex], Low);
+  digitalWrite(leds[ledIndex], LOW);
   Serial.println("one");
 }
 
