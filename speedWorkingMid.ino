@@ -38,6 +38,7 @@ int millisDelay = 0;
 
 bool direction = true;
 bool held = false;
+bool gameOver = false;
 
 int leds[] = {LED_STRIP_PIN_1, LED_STRIP_PIN_2, LED_STRIP_PIN_3, LED_STRIP_PIN_4, LED_STRIP_PIN_5};
 
@@ -72,10 +73,16 @@ void setup() {
   lcd.setCursor(2, 1);
   lcd.print("  \"SPEED\"");
   delay(3000);
+}
+
+
+void loop() {
+  score = 0;
+
   lcd.clear();
   lcd.print("Press the first");
   lcd.setCursor(0, 1);
-  lcd.print("button to begin");
+  lcd.print("button to start");
   while (digitalRead(BUTTON_PIN_1) != HIGH) {}
 
   for (int countDown = 3; countDown > 0; countDown --) {
@@ -89,22 +96,48 @@ void setup() {
   lcd.print("     Score:");
   lcd.setCursor(7, 1);
   lcd.print(score);
+
+  speed = 500;
+  gameOver = false;
+  while(!gameOver) {
+    unsigned long oldMillis = millis();
+    gameOver = runSpeed(oldMillis);
+  }
+  digitalWrite(leds[ledIndex], Low);
+  Serial.println("one");
 }
 
-unsigned long oldMillis = millis();
+void updateScore() {
+  score += 1;
 
-void loop() {
+  lcd.clear();
+  lcd.print("     Score:");
+  lcd.setCursor(7, 1);
+  lcd.print(score);
+}
+
+bool runSpeed(int oldMillis) {
   digitalWrite(leds[ledIndex], HIGH);
-  Serial.println(ledIndex);
+  // Serial.println(speed);
   unsigned long newMillis = millis();
 
   while (newMillis - oldMillis < speed) {
     newMillis = millis();
 
     if (digitalRead(BUTTON_PIN_3) == HIGH) {
-      if (ledIndex == 3 && held == false) {
-        speed = speed * .80;
-        held = true;
+
+      if (ledIndex == 2) {
+
+        if (held == false) {
+
+          updateScore();
+          speed = speed * .80;
+          held = true;
+        }
+      } else {
+        Serial.println("before");
+        return true;
+        Serial.println("after");
       }
     }
   }
@@ -127,4 +160,8 @@ void loop() {
   if (digitalRead(BUTTON_PIN_3) == LOW) {
     held = false;
   }
+  if (digitalRead(BUTTON_PIN_3) == HIGH) {
+    held = true;
+  }
+  return false;
 }
