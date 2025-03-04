@@ -48,7 +48,6 @@ LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 // "unsigned long currentMillis = millis()" to check delay
 
 void setup() {
-  Serial.begin(9600);
 
  // Set the LED strip pins as outputs
   pinMode(LED_STRIP_PIN_1, OUTPUT);
@@ -96,15 +95,23 @@ void loop() {
   lcd.print("     Score:");
   lcd.setCursor(7, 1);
   lcd.print(score);
-
+  
   speed = 500;
   gameOver = false;
+  ledIndex = 0;
+  score = 0;
+
   while(!gameOver) {
     unsigned long oldMillis = millis();
     gameOver = runSpeed(oldMillis);
   }
   digitalWrite(leds[ledIndex], LOW);
-  Serial.println("one");
+
+  lcd.clear();
+  lcd.print("  Final score:");
+  lcd.setCursor(7, 1);
+  lcd.print(score);
+  delay(1850);
 }
 
 void updateScore() {
@@ -118,26 +125,21 @@ void updateScore() {
 
 bool runSpeed(int oldMillis) {
   digitalWrite(leds[ledIndex], HIGH);
-  // Serial.println(speed);
+
   unsigned long newMillis = millis();
 
   while (newMillis - oldMillis < speed) {
     newMillis = millis();
 
     if (digitalRead(BUTTON_PIN_3) == HIGH) {
-
-      if (ledIndex == 2) {
-
-        if (held == false) {
-
+      if (ledIndex == 2 && !held) {
+        if (!held) {
           updateScore();
-          speed = speed * .80;
+          speed = speed * .875;
           held = true;
         }
-      } else {
-        Serial.println("before");
+      } else if (!held) {
         return true;
-        Serial.println("after");
       }
     }
   }
@@ -145,7 +147,7 @@ bool runSpeed(int oldMillis) {
   digitalWrite(leds[ledIndex], LOW);
   oldMillis = millis();
 
-  if (direction == true) {
+  if (direction) {
     ledIndex += 1;
   } else {
     ledIndex -= 1;
